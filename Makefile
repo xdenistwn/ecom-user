@@ -2,10 +2,10 @@ create-network:
 	docker network create internal_vpc
 
 up:
-	docker compose -f docker-compose.user.yml up -d
+	docker compose -f docker-compose.yml up -d
 
 stop:
-	docker compose -f docker-compose.user.yml stop
+	docker compose -f docker-compose.yml stop
 
 down:
-	docker compose -f docker-compose.user.yml down
+	docker compose -f docker-compose.yml down
