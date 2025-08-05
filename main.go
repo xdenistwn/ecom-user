@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"user/cmd/user/handler"
 	"user/cmd/user/repository"
 	"user/cmd/user/resource"
@@ -8,9 +9,14 @@ import (
 	"user/cmd/user/usecase"
 	"user/config"
 	"user/infrastructure/log"
+	"user/proto/userpb"
 	"user/routes"
 
+	grpcUser "user/grpc"
+
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -30,11 +36,28 @@ func main() {
 	userUsecase := usecase.NewUserUsecase(userService, cfg.Jwt.Secret)
 	userHandler := handler.NewUserHandler(userUsecase)
 
-	port := cfg.App.Port
-	router := gin.Default()
-	routes.SetupRoutes(router, *userHandler, cfg.Jwt.Secret)
+	go func() {
+		// HTTP server setup
+		port := cfg.App.Port
+		router := gin.Default()
+		routes.SetupRoutes(router, *userHandler, cfg.Jwt.Secret)
+		router.Run(":" + port)
+		log.Logger.Printf("HTTP Server listening on port: %s", port)
+	}()
 
-	router.Run(":" + port)
+	listen, err := net.Listen("tcp", ":"+cfg.App.GRPCPort)
+	if err != nil {
+		log.Logger.Fatalf("Failed to listen on port %s: %v", cfg.App.GRPCPort, err)
+	}
 
-	log.Logger.Printf("Server listening on port: %s", port)
+	// GRPC server setup
+	grpcServer := grpc.NewServer()
+	userpb.RegisterUserServiceServer(grpcServer, &grpcUser.GRPCServer{
+		UserUsecase: *userUsecase,
+	})
+	reflection.Register(grpcServer)
+	log.Logger.Printf("GRPC Server listening on port: %s", cfg.App.GRPCPort)
+	if err := grpcServer.Serve(listen); err != nil {
+		log.Logger.Fatalf("Failed to serve gRPC server: %v", err)
+	}
 }

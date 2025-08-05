@@ -121,7 +121,7 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	user, err := h.UserUsecase.GetUserById(c.Request.Context(), int64(userId))
+	user, err := h.UserUsecase.GetUserInfoByUserId(c.Request.Context(), int64(userId))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -141,8 +141,10 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 
 	// valid
 	c.JSON(http.StatusOK, gin.H{
+		"id":    user.ID,
 		"name":  user.Name,
 		"email": user.Email,
+		"role":  user.Role,
 	})
 }
 

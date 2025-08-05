@@ -8,7 +8,8 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Port string `mapstructure:"APP_PORT"`
+	Port     string `mapstructure:"APP_PORT"`
+	GRPCPort string `mapstructure:"APP_GRPC_PORT"`
 }
 
 type DatabaseConfig struct {

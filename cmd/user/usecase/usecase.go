@@ -35,7 +35,7 @@ func (uc *UserUsecase) GetUserByEmail(ctx context.Context, email string) (*model
 	return user, nil
 }
 
-func (uc *UserUsecase) GetUserById(ctx context.Context, userId int64) (*models.User, error) {
+func (uc *UserUsecase) GetUserInfoByUserId(ctx context.Context, userId int64) (*models.User, error) {
 	user, err := uc.UserService.GetUserById(ctx, userId)
 
 	if err != nil {
